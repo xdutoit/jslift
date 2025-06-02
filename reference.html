@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style_common.css">
+    <link rel="stylesheet" href="style/style_lift.css">
+    <title>jsLift - référence</title>
+</head>
+<body>
+    <div id="div_ref_outer_container">
+        <header id="head_ref">25.05.2025 - version 1.0</header>
+        <table id="tab_ref">
+            <tr>
+                <th colspan="2">déplacer les ascenseurs</th>
+            </tr>
+            <tr>
+                <td><code>liftGoTo(liftNumber, floorNumber)</code></td>
+                <td>
+                    envoie immédiatement l'ascenseur <code>liftNumber</code> directement à l'étage <code>floorNumber</code><br>
+                    (efface la liste de destinations)
+                </td>
+            </tr>
+            <tr>
+                <td><code>liftSetDestinationList(liftNumber, destinationList, [cycle])</code></td>
+                <td>
+                    donne à l'ascenseur <code>liftNumber</code> la liste de destinations <code>destinationList</code><br>
+                    si <code>cycle</code> est <code>true</code>, la liste de destinations est lue en boucle (valeur par défaut: <code>false</code> )
+                </td>
+            </tr>
+
+            <tr>
+                <th colspan="2">gérer les indicateurs</th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <strong>remarque :</strong> les indicateurs sont les lumières qui indiquent si l'ascenseur monte ou s'il descend. Une personne qui attend l'ascenseur ne va monter que si:<br>
+                    les deux lumières (UP et DOWN) sont allumées; ou<br>
+                    les deux lumières (UP et DOWN) sont éteintes; ou<br>
+                    une seule lumière est allumée et la personne souhaite aller dans cette direction
+                </td>
+            </tr>
+            <tr>
+                <td><code>floorSetLiftLight(floorNumber, liftNumber, direction, state)</code></td>
+                <td>
+                    allume (si <code>state</code> vaut <code>true</code>) ou éteint (si <code>state</code> vaut <code>false</code>) la lumière de l'ascenseur <code>liftNumber</code> à l'étage <code>floorNumber</code> dans la direction <code>direction</code> (<code>UP</code> ou <code>DOWN</code>)
+                </td>
+            </tr>
+            <tr>
+                <td><code>updateLiftLights(liftNumber)</code></td>
+                <td>
+                    met à jour toutes les lumières de l'ascenseur <code>liftNumber</code><br>
+                    (se base sur la liste actuelle de destinations de l'ascenseur)
+                </td>
+            </tr>
+
+            <tr>
+                <th colspan="2">interroger l'environnement</th>
+            </tr>
+            <tr>
+                <td><code>getNFloors()</code></td>
+                <td>
+                    renvoie le nombre d'étages
+                </td>
+            </tr>
+            <tr>
+                <td><code>getFloorButtonState(floorNumber, direction)</code></td>
+                <td>
+                    renvoie <code>true</code> si au moins une personne à l'étage <code>floorNumber</code> a appuyé sur le bouton <code>direction</code> (<code>UP</code> ou <code>DOWN</code>), et <code>false</code> sinon
+                </td>
+            </tr>
+            <tr>
+                <td><code>isLiftAtFloor(liftNumber, floorNumber)</code></td>
+                <td>
+                    renvoie <code>true</code> si l'ascenseur <code>liftNumber</code> se trouve actuellement à l'étage <code>floorNumber</code>, et <code>false</code> sinon
+                </td>
+            </tr>
+            <tr>
+                <td><code>getLiftButtonState(liftNumber, floorNumber)</code></td>
+                <td>
+                    renvoie <code>true</code> si au moins une personne dans l'ascenseur <code>liftNumber</code> a appuyé sur le bouton pour se rendre à l'étage <code>floorNumber</code>
+                </td>
+            </tr>
+            <tr>
+                <td><code>getLiftLoad(liftNumber)</code></td>
+                <td>
+                    renvoie le poids total des personnes actuellement dans l'ascenseur <code>liftNumber</code> divisé par la capacité totale théorique de cet ascenseur (0=vide / 1=plein)<br>
+                    (les personnes peuvent être plus ou moins lourdes, il y a donc un élément aléatoire dans la valeur renvoyée: elle peut être strictement inférieure à 1 alors que l'ascenseur est plein, et elle peut parfois dépasser 1)
+                </td>
+            </tr>
+            
+            <tr>
+                <th colspan="2">fonctions appelées par jsLift</th>
+            </tr>
+            
+            <tr>
+                <td><code>gererLiftInit()</code></td>
+                <td>
+                    fonction appelée une fois au démarrage
+                </td>
+            </tr>
+            <tr>
+                <td><code>gererLiftStep()</code></td>
+                <td>
+                    fonction appelée à chaque itération de la simulation
+                </td>
+            </tr>
+            <tr>
+                <td><code>liftArrivesAtFloor(liftNumber,floorNumber)</code></td>
+                <td>
+                    fonction appelée juste avant que l'ascenseur <code>liftNumber</code> n'arrive à l'étage <code>floorNumber</code> (même s'il ne s'y arrête pas)
+                </td>
+            </tr>
+            <tr>
+                <td><code>liftLeavesFloor(liftNumber,floorNumber)</code></td>
+                <td>
+                    fonction appelée juste avant que l'ascenseur <code>liftNumber</code> ne quitte l'étage <code>floorNumber</code> (lorsque les portes commencent à se fermer)
+                </td>
+            </tr>
+            <tr>
+                <td><code>buttonIsPressed(floorNumber,direction)</code></td>
+                <td>
+                    fonction appelée lorsqu'une personne appuye sur le bouton <code>direction</code> (<code>UP</code> ou <code>DOWN</code>) à l'étage <code>floorNumber</code>
+                </td>
+            </tr>
+            <tr>
+                <td><code>liftIsIdle(liftNumber)</code></td>
+                <td>
+                    fonction appelée lorsque l'ascenseur <code>liftNumber</code> n'a plus de destination suivante dans sa liste de destination
+                </td>
+            </tr>
+        
+
+        </table>
+    </div>
+</body>
+</html>

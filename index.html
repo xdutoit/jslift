@@ -1,1 +1,91 @@
-ça marche !
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style_common.css">
+    <link rel="stylesheet" href="style/style_index.css">
+    <script>
+        function setVisibility(id_cache){
+            // enlever tous les caches
+            document.querySelectorAll('#div_images_elements>img:not(#img_elements_base)').forEach(element => {
+                console.log(element.id);
+                if(element.id=='img_cache_'+id_cache){
+                    // montrer
+                    element.style.visibility = 'visible';
+                }
+                else{
+                    // cacher
+                    element.style.visibility = 'hidden';
+                }
+            });
+        }
+    </script>
+    <title>jsLift</title>
+</head>
+<body>
+    <div id="div_outer_container">
+        <div id="main_title">jsLift</div>
+        <div id="div_rem">un jeu d'ascenseur très fortement inspiré de <a href="https://play.elevatorsaga.com/" target="_blank">elevatorsaga.com</a></div>
+        <div id="div_version">25.05.2025 - version 1.0</div>
+        <div>Gérez des ascenseurs en JavaScript, et essayez d'amener tout le monde au bon étage.</div>
+        <section>
+            <h1>Le principe</h1>
+            <p>Vous devez écrire un code pour donner des instructions à un ou plusieurs ascenseurs.</p>
+        </section>
+        <section>
+            <h1>Téléchargement</h1>
+            <p>Vous pouvez télécharger la <a href="downloads/jslift_1_0.zip">version actuelle</a> (fichier zip, 20 ko).</p>
+            <p>Décompressez ce dossier et placez vos scripts dans le dossier <em>playerScripts</em>.</p>
+            <p>historique des versions:</p>
+            <ul>
+                <li>version 1.0 - 02.06.2025: <a href="downloads/jslift_1_0.zip">version initiale</a></li>
+            </ul>
+        </section>
+        <section>
+            <h1>Eléments de la simulation</h1>
+            <div id="div_images_elements">
+                <img id="img_elements_base" src="image/lift_complet.svg" alt="environnement de la simulation">
+                <img id="img_cache_ascenseurs" src="image/cache_ascenseurs.svg" alt="ascenseurs" style="visibility: hidden;">
+                <img id="img_cache_etages" src="image/cache_etages.svg" alt="étages" style="visibility: hidden;">
+                <img id="img_cache_btn_etages" src="image/cache_btn_etages.svg" alt="boutons étages" style="visibility: hidden;">
+                <img id="img_cache_lum_ascenseurs" src="image/cache_lum_ascenseurs.svg" alt="lumières ascenseurs" style="visibility: hidden;">
+                <img id="img_cache_btn_ascenseurs" src="image/cache_btn_ascenseurs.svg" alt="boutons ascenseurs" style="visibility: hidden;">
+            </div>
+            <div id="div_boutons_elements">
+                survolez un texte pour mettre en évidence les éléments correspondants:<br>
+                <ul>
+                    <li><span class="span_elements_bouton" onmouseover="setVisibility('ascenseurs');" onmouseout="setVisibility();">ascenseurs</span></li>
+                    <li><span class="span_elements_bouton" onmouseover="setVisibility('etages');" onmouseout="setVisibility();">étages</span></li>
+                    <li><span class="span_elements_bouton" onmouseover="setVisibility('btn_etages');" onmouseout="setVisibility();">boutons des étages</span></li>
+                    <li><span class="span_elements_bouton" onmouseover="setVisibility('lum_ascenseurs');" onmouseout="setVisibility();">lumières des ascenseurs</span></li>
+                    <li><span class="span_elements_bouton" onmouseover="setVisibility('btn_ascenseurs');" onmouseout="setVisibility();">boutons des ascenseurs</span></li>
+                </ul>
+            </div>
+            <h2>Les ascenseurs</h2>
+            <p>Chaque scénario a un ou plusieurs ascenseurs auxquels vous donnez des instructions (p.ex. à quel étage aller ensuite)</p>
+            <h2>Les étages</h2>
+            <p>A chaque étage apparaissent aléatoirement des personnes qui souhaitent se rendre à un autre étage</p>
+            <h2>Les boutons des étages</h2>
+            <p>Chaque étage a deux boutons : un pour monter et un pour descendre. Chaque personne qui apparait appuie sur le bouton qui correspond à sa destination. Il faut remarque que tant qu'une personne attend l'ascenseur, on ne peut pas connaître sa destination ; on peut seulement savoir si elle souhaite monter ou descendre.</p>
+            <h2>Les lumières des ascenseurs</h2>
+            A chaque étage et pour chaque ascenseur se trouvent deux lumières, une vers le haut et une vers le bas, qui peuvent être allumées ou éteintes. Une personne ne va monter dans un ascenseur que si la lumière indique qu'il va dans la direction souhaitée (ou si les lumières sont toutes deux allumées ou toutes deux éteintes).
+            <h2>Les boutons des ascenseurs</h2>
+            Une fois à l'intérieur de l'ascenseur, la personne va appuyer sur le bouton correspondant à l'étage où elle souhaite se rendre. Ce n'est donc qu'une fois qu'une personne est montée dans un ascenseur qu'on peut connaître sa destination.
+        </section>
+        <section>
+            <h1>Comment donner des instructions aux ascenseurs</h1>
+            <p>Il y a plusieurs moyens par lesquels vous pouvez donner des instructions aux ascenseurs.</p>
+            <p>Premièrement, si vous placez une fonction nommée <code>gererLiftInit()</code> dans votre script, celle-ci sera appelée <strong>une fois au début de la simulation</strong>. Vous pouvez donc l'utiliser pour donner une fois pour toutes une liste de destination à un ascenseur.</p>
+            <p>Ensuite, si vous placez une fonction nommée <code>gererLiftStep()</code> dans votre code, celle-ci sera appelée <strong>à chaque itération de la simulation</strong> (c-à-d 10 fois par seconde à la vitesse normale). Vous pouvez l'utiliser pour interroger l'environnement (voir quel bouton est appuyé à quel étage, p.ex.) et donner les instructions aux ascenseurs en conséquence.</p>
+            <p>Finalement, il y a aussi des <strong>évènements qui seront automatiquement déclenchés à certaines conditions</strong>. Par exemple, si vous placez une fonction nommée <code>liftArrivesAtFloor()</code> dans votre code, celle-ci sera appelée à chaque fois qu'un ascenseur est sur le point d'arriver à un étage (le numéro de l'ascenseur et de l'étage sont passés en paramètres à la fonction).</p>
+            <p>Toutes ces fonctions sont décrites dans la <a href="reference.html" target="ref">référence</a></p>
+        </section>
+        <section>
+            <h1>Playground</h1>
+            Vous pouvez tester les différentes instructions et observer les différents évènements dans le <a href="playground.html" target="playground">playground</a>.
+        </section>
+    </div>
+    <footer>contact, questions, remarques: <a href="mailto:xavier.dutoit@edufr.ch">xavier.dutoit@edufr.ch</a></footer>
+</body>
+</html>

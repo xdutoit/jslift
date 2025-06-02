@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jsLift - playground</title>
+
+    <link rel="stylesheet" href="style/style_common.css">
+    <link rel="stylesheet" href="style/style_playground.css">
+
+    <script src="script/jslift_objects.js" defer></script>
+    <script src="script/jslift_main_script.js" defer></script>
+    <script src="script/playground_script.js" defer></script>
+</head>
+<body>
+    <div id="pg_outer_container">
+        <div id="pg_sim">
+            <h1 id="pg_title">Playground</h1>
+            <nav>
+                <a href="reference.html" target="ref">référence</a>
+            </nav>
+            <div id="div_description">Sur cette page, vous pouvez tester les différentes commandes à  disposition. Cliquez sur un bouton pour appeler la fonction correspondante.</div>
+            <canvas id="lift_canvas" width="600" height="400"></canvas><br>
+            <div id="div_controles">
+                <button id="btn_demarrer">démarrer</button>
+                <button id="btn_reset">reset</button>
+                vitesse:
+                <button id="btn_dtminus" disabled>-</button>
+                <span id="span_dt">1</span>x
+                <button id="btn_dtplus">+</button>
+                (il est possible de faire tourner la simulation au ralenti)
+            </div>
+            <div id="div_stats">
+                temps écoulé: <span id="span_stats_time_elapsed">0</span> s<br>
+                personnes transportées: <span id="span_stats_persons_transported">0</span><br>
+                temps d'attente moyen: <span id="span_stats_avg_waiting_time">-</span> s<br>
+                temps d'attente max: <span id="span_stats_max_waiting_time">-</span> s
+            </div>
+            <div style="width: 600px;margin: 0 auto;">
+                <h2>messages</h2>
+                <div id="div_console"></div>
+            </div>
+        </div>
+        <div id="pg_controls">
+            <div class="div_pg_section">
+                <h2>ascenseurs et indicateurs</h2>
+                <code>liftGoTo(l,f)</code>: envoie immédiatement l'ascenseur <code>l</code> vers l'étage <code>f</code><br>
+                <button onclick="liftGoTo(0,0);">liftGoTo(0,0);</button><br>
+                <button onclick="liftGoTo(0,2);">liftGoTo(0,2);</button><br>
+                <button onclick="liftGoTo(1,1);">liftGoTo(1,1);</button><br>
+                <button onclick="liftGoTo(1,3);">liftGoTo(1,3);</button><br><br>
+                <code>liftSetDestinationList(l,d,[c])</code>: donne à l'ascenseur <code>l</code> la liste de destinations <code>d</code><br>
+                <button onclick="liftSetDestinationList(0,[2,4]);">liftSetDestinationList(0,[2,4]);</button><br>
+                <button onclick="liftSetDestinationList(0,[0,1,2,4]);">liftSetDestinationList(0,[0,1,2,4]);</button><br>
+                <button onclick="liftSetDestinationList(1,[4,3,2],true);">liftSetDestinationList(1,[4,3,2],true);</button><br><br>
+                <code>floorSetLiftLight(f, l, d, s)</code>: allume (si <code>s</code> vaut <code>true</code>) ou éteint (si <code>s</code> vaut <code>false</code>) la lumière de l'ascenseur <code>l</code> à l'étage <code>f</code> dans la direction <code>d</code> (<code>UP</code> ou <code>DOWN</code>)
+                <button onclick="floorSetLiftLight(2,0,UP,true);">floorSetLiftLight(2,0,UP,true);</button><br>
+                <button onclick="floorSetLiftLight(3,1,DOWN,true);">floorSetLiftLight(3,1,DOWN,true);</button><br>
+            </div>
+
+            <div class="div_pg_section">
+                <h2>interroger l'environnement</h2>
+                il faut cliquer sur un bouton pour mettre à jour le résultat<br>
+                <table>
+                    <tr>
+                        <td><button onclick="pg_sim_gFBS(0,UP);">getFloorButtonState(0, UP);</button></td>
+                        <td><span id="sp_gFBS_0_UP"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gFBS(2,DOWN);">getFloorButtonState(2, DOWN);</button></td>
+                        <td><span id="sp_gFBS_2_DOWN"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_iLAT(0,0);">isLiftAtFloor(0, 0);</button></td>
+                        <td><span id="sp_iLAT_0_0"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_iLAT(1,0);">isLiftAtFloor(1, 0);</button></td>
+                        <td><span id="sp_iLAT_1_0"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_iLAT(0,2);">isLiftAtFloor(0, 2);</button></td>
+                        <td><span id="sp_iLAT_0_2"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLBS(0,0);">getLiftButtonState(0, 0);</button></td>
+                        <td><span id="sp_gLBS_0_0"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLBS(0,1);">getLiftButtonState(0, 1);</button></td>
+                        <td><span id="sp_gLBS_0_1"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLBS(0,2);">getLiftButtonState(0, 2);</button></td>
+                        <td><span id="sp_gLBS_0_2"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLBS(1,1);">getLiftButtonState(1, 1);</button></td>
+                        <td><span id="sp_gLBS_1_1"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLBS(1,2);">getLiftButtonState(1, 2);</button></td>
+                        <td><span id="sp_gLBS_1_2"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLL(0);">getLiftLoad(0);</button></td>
+                        <td><span id="sp_gLL_0"></span></td>
+                    </tr>
+                    <tr>
+                        <td><button onclick="pg_sim_gLL(1);">getLiftLoad(1);</button></td>
+                        <td><span id="sp_gLL_1"></span></td>
+                    </tr>
+                </table>
+            </div>
+            <div class="div_pg_section">
+                <h2>évènements</h2>
+                Voici la liste des évènements déclenchés:<br>
+                (<code>gererLiftStep()</code> n'apparaît pas ici car cette fonction est appelée à chaque itération de la simulation)
+                <div id="div_pg_evt_console"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

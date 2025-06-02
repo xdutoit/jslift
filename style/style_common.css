@@ -1,0 +1,35 @@
+body{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+/* liens menu navigation */
+nav>a{
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+}
+nav>a:hover{
+    background-color: #ccf;
+}
+/* console */
+#div_console{
+    font-family:'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: .8em;
+}
+.fct_msg{ /* message d'appel à une fonction sur la div div_console */
+    color: green;
+    font-weight: bold;
+}
+.error_msg{ /* message d'erreur sur la div div_console */
+    color: red;
+    font-weight: bold;
+}
+/* code */
+code{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1em;
+	background-color: #dee;
+	color: #033;
+	border-radius: 5px;
+	padding: 2px 4px;
+}

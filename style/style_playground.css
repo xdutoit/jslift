@@ -1,0 +1,63 @@
+#pg_title{
+    text-align: center;
+}
+#pg_outer_container{
+    position: relative;
+}
+#pg_sim{
+    margin-left: 10px;
+    width: 600px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+}
+#div_stats{
+    background-color: #ccc;
+    font-size: 0.9em;
+    padding: 5px;
+    margin: 5px 0;
+}
+#pg_controls{
+    margin-left: 610px;
+}
+#div_pg_outer_container{
+    margin: 0 50px;
+}
+.div_pg_section{
+    font-size: .8em;
+    margin: 0 10px;
+}
+.div_pg_section h2{
+    margin-bottom: 0px;
+}
+.div_pg_section button{
+    font-family: 'Courier New', Courier, monospace;
+    font-size: .9em;
+}
+#div_pg_evt_console{
+    font-family:'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+.pg_evt_num{
+    width: 40px;
+    float: left;
+}
+.pg_evt_txt{
+    width: 450px;
+}
+.pg_true, .pg_false{
+    font-weight: bold;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    padding: 2px;
+    margin: 2px;
+}
+.pg_true{
+    background-color: #9f9;
+    color: #090;
+}
+.pg_false{
+    background-color: #f99;
+    color: #900;
+}

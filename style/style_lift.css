@@ -1,0 +1,46 @@
+#div_outer_container{
+    width: 600px;
+    margin: 0 auto;
+}
+#div_status{
+    border: 2px solid #f55;
+    border-radius: 5px;
+    background-color: #faa;
+    margin: 5px 0px;
+    padding: 5px;
+}
+#div_description{
+    margin: 5px 0px;
+}
+#div_controles{
+    font-size: .8em;
+}
+#div_stats{
+    background-color: #ccc;
+    font-size: 0.9em;
+    padding: 5px;
+    margin: 5px 0;
+}
+/* référence */
+#head_ref{
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+#div_ref_outer_container{
+    margin: 50px 100px;
+    font-size: 0.8em;
+}
+#tab_ref{
+    width: 100%;
+    border-collapse: collapse;
+}
+#tab_ref td,.tab_ref th{
+	padding: 5px;
+}
+#tab_ref th{
+	border-top: 3px solid gray;
+}
+#tab_ref tr:nth-child(even){
+	background-color: #ddd;
+}
