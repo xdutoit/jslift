@@ -14,6 +14,7 @@ let jsLift = {
     MIN_TIME_MULT : 1,
     STATE_STOP : 0,
     STATE_RUN : 1,
+    STATE_PAUSE: 2,
 
     // états lifts
     MOVING : 0,
@@ -22,6 +23,10 @@ let jsLift = {
     LOADING: 3,
     CLOSING_DOORS: 4,
     STOPPED: 5,
+
+    // challenge
+    CHALLENGE_NB_TRANSPORTED: 0, // transporter un certain nombre de personnes dans le temps imparti
+    CHALLENGE_MAX_WAITING_TIME: 1,
 
     // paramètres sim
     WAITING_QUEUE_MAX_LENGTH : 10, // taille maximale d'une file d'attente
@@ -67,6 +72,8 @@ let jsLift = {
     // scenario
     scenarioNum : 0,
     currentScenario: false, // variable contenant le scénario actuel (depuis liste_scenarii)
+    maxWaitingQueue: -1, // nombre max de personnes qui attendent par étage
+    maxTotalPeople: -1, // nombre max total de personnes (qui attendent et dans les ascenseurs)
 
     // stats
     nPersonsTransported : 0,
@@ -100,6 +107,7 @@ let jsLift = {
     },
 
     loadScenario: function(){
+        console.log('load scénar');
         // trouver numéro scénario
         let params = new URLSearchParams(document.location.search);
         jsLift.scenarioNum = parseInt(params.get('scenario'));
@@ -113,12 +121,12 @@ let jsLift = {
         // màj liens
         if(jsLift.scenarioNum > 1){
             document.querySelector('#a_prev').style.visibility = 'visible';
-            document.querySelector('#a_prev').setAttribute('href','jsLift.html?scenario='+(jsLift.scenarioNum-1));
+            document.querySelector('#a_prev').setAttribute('href','index.html?scenario='+(jsLift.scenarioNum-1));
         }
         else{
             document.querySelector('#a_prev').style.visibility = 'hidden';
         }
-        document.querySelector('#a_next').setAttribute('href','jsLift.html?scenario='+(jsLift.scenarioNum+1));
+        document.querySelector('#a_next').setAttribute('href','index.html?scenario='+(jsLift.scenarioNum+1));
 
         // charger infos du scénario
         if (liste_scenarii.length < jsLift.scenarioNum){
@@ -128,6 +136,7 @@ let jsLift = {
         else{
             jsLift.currentScenario = liste_scenarii[jsLift.scenarioNum-1];
             document.querySelector('#div_description').innerHTML = jsLift.currentScenario['description'];
+            document.querySelector('#div_challenge').innerHTML = jsLift.challenge2text(jsLift.currentScenario);
 
             // adapter hauteur canevas
             jsLift.CANVAS_HEIGHT = jsLift.currentScenario.nFloors * jsLift.FLOOR_HEIGHT
@@ -201,6 +210,15 @@ let jsLift = {
             jsLift.currentScenario.spawnProbMatrix = spawnProbMatrix;
         }
 
+        // créer maxima sur waiting list
+        if(!('maxWaitingQueue' in jsLift.currentScenario)){
+            jsLift.currentScenario.maxWaitingQueue = -1;
+        }
+        if(!('maxTotalPeople' in jsLift.currentScenario)){
+            jsLift.currentScenario.maxTotalPeople = -1;
+        }
+        console.log(`scénar chargé, max:${jsLift.currentScenario.maxWaitingQueue} / max tot:${jsLift.currentScenario.maxTotalPeople}`);
+
         // lifts
         jsLift.liftsList = [];
         for(let l=0;l<jsLift.currentScenario.nLifts;l++){
@@ -218,6 +236,7 @@ let jsLift = {
         jsLift.waitingTimesList = [];
 
         jsLift.drawAll();
+        jsLift.updateStats();
     },
 
     setStatus : function(txt){
@@ -269,6 +288,20 @@ let jsLift = {
 
     },
 
+    challenge2text: function(scenario){
+        // crée la description du défi du scénario en cours
+        let txt='';
+        switch(scenario.challengeType){
+            case jsLift.CHALLENGE_NB_TRANSPORTED:
+                txt = `Vous devez transporter au moins <span class="challenge_bold">${scenario.challengeData}</span> personnes en <span class="challenge_bold">${scenario.challengeMaxTime}</span> secondes.`;
+                break;
+            case jsLift.CHALLENGE_MAX_WAITING_TIME:
+                txt = `Vous devez transporter des personnes pendant <span class="challenge_bold">${scenario.challengeMaxTime}</span> secondes et personne ne doit attendre plus de <span class="challenge_bold">${scenario.challengeData}</span> secondes.`;
+                break;
+        }
+        return txt;
+    },
+
     /*
     *
     * GESTION SIMULATION
@@ -279,27 +312,35 @@ let jsLift = {
         // démarre et arrête la simulation
 
         if (jsLift.simState==jsLift.STATE_STOP){
-            // démarre la simulation
+            // démarre la simulation à partir de zéro
             jsLift.tryCallInit();
             jsLift.simState = jsLift.STATE_RUN;
-            document.querySelector('#btn_demarrer').innerHTML = 'arrêter';
+            document.querySelector('#btn_demarrer').innerHTML = 'pause';
+            jsLift.tickTimer = setInterval(jsLift.tick,jsLift.DT/jsLift.timeMultiplier);
+        }
+        else if(jsLift.simState==jsLift.STATE_PAUSE){
+            // continue la simulation
+            jsLift.simState = jsLift.STATE_RUN;
+            document.querySelector('#btn_demarrer').innerHTML = 'pause';
             jsLift.tickTimer = setInterval(jsLift.tick,jsLift.DT/jsLift.timeMultiplier);
         }
         else{
+            // la sim est en train de tourner
             //console.log('stop sim');
-            jsLift.simState = jsLift.STATE_STOP;
+            jsLift.simState = jsLift.STATE_PAUSE;
             clearInterval(jsLift.tickTimer);
-            document.querySelector('#btn_demarrer').innerHTML = 'démarrer';
+            document.querySelector('#btn_demarrer').innerHTML = 'reprendre';
         }
 
     },
 
     resetSim: function(){
-        if (jsLift.simState==jsLift.STATE_RUN){
-            jsLift.simState = jsLift.STATE_STOP;
-            clearInterval(jsLift.tickTimer);
-            document.querySelector('#btn_demarrer').innerHTML = 'démarrer';
-        }
+        // arrêter la simulation en cours
+        jsLift.simState = jsLift.STATE_STOP;
+        clearInterval(jsLift.tickTimer);
+
+        // remettre en mode "démarrer"
+        document.querySelector('#btn_demarrer').innerHTML = 'démarrer';
         jsLift.clearConsole();
         jsLift.initScenario();
     },
@@ -334,11 +375,14 @@ let jsLift = {
         //console.log('appel animateSim()');
         jsLift.animateSim();
 
-        // appel du script de la joueuse tous les 10 ticks
+        // appel du script de la joueuse tous les ticks
         jsLift.tryCallStep();
 
         // màj stats
         jsLift.updateStats();
+
+        // vérifier conditions fin
+        jsLift.checkGameOver();
     },
 
     animateSim : function(){
@@ -416,6 +460,92 @@ let jsLift = {
         document.querySelector('#span_stats_avg_waiting_time').innerHTML = avgTimeSeconds;
         document.querySelector('#span_stats_max_waiting_time').innerHTML = maxTimeSeconds;
 
+    },
+
+    checkGameOver: function(){
+        // vérifie si les conditions de fin sont atteintes et si le challenge a été réussi
+
+        let gameOver = false;
+        let challengeCompleted = false;
+
+        // vérifier si le temps est écoulé
+        if (jsLift.tickNum*jsLift.DT/1000 >= this.currentScenario.challengeMaxTime){
+            gameOver = true;
+        }
+
+        // condition de victoire: nombre de personnes transportées
+        if (this.currentScenario.challengeType == jsLift.CHALLENGE_NB_TRANSPORTED){
+            if(this.waitingTimesList.length>=this.currentScenario.challengeData){
+                // réussi (arrêt immédiat)
+                challengeCompleted = true;
+            }
+        }
+
+        // condition de défaite: temps d'attente max
+        if (this.currentScenario.challengeType == jsLift.CHALLENGE_MAX_WAITING_TIME){
+            let avgMaxTime = jsLift.getAvgMaxWaitingTime();
+            if (avgMaxTime[1]>this.currentScenario.challengeData){
+                // raté (arrêt immédiat)
+                gameOver = true;
+            }
+        }
+        // condition de victoire: temps d'attente max
+        let avgMaxTime = jsLift.getAvgMaxWaitingTime();
+        if (gameOver && avgMaxTime[1]<=this.currentScenario.challengeData){
+                // temps écoulé + réussi
+                challengeCompleted = true;
+        }
+
+
+
+        // if max>autorisé: gameOver=true
+        // if gameOver && max<=autorisé: challengeCompleted=true
+
+        if(gameOver || challengeCompleted){
+            jsLift.simState = jsLift.STATE_PAUSE;
+            clearInterval(jsLift.tickTimer);
+
+            if(challengeCompleted){
+                document.querySelector('#div_challenge_completed').classList.remove('challenge_failed');
+                document.querySelector('#div_challenge_completed').classList.add('challenge_passed');
+                document.querySelector('#div_challenge_completed').innerHTML = 'défi réussi !';
+                document.querySelector('#div_challenge_completed').style.display = 'block';
+            }
+            else{
+                document.querySelector('#div_challenge_completed').classList.remove('challenge_passed');
+                document.querySelector('#div_challenge_completed').classList.add('challenge_failed');
+                document.querySelector('#div_challenge_completed').innerHTML = 'défi échoué !';
+                document.querySelector('#div_challenge_completed').style.display = 'block';
+            }
+        }
+
+    },
+
+    // TODO: function tick2seconds
+    // TODO: function getElapsedTime
+    // TODO: function getNbTransportedPersons
+    // TODO: function getMaxAvgWaitingTime
+
+    tick2seconds: function(tick){
+        return Math.round(100*tick*jsLift.DT/1000)/100;
+    },
+
+    getAvgMaxWaitingTime: function(){
+        if(jsLift.waitingTimesList.length>0){
+            let maxTimeTick = 0;
+            let totalTimeTick = 0;
+            
+            let nPersonsTransported = jsLift.waitingTimesList.length;
+            jsLift.waitingTimesList.forEach(t => {
+                totalTimeTick += t;
+                if(t>maxTimeTick){
+                    maxTimeTick = t;
+                }
+            });
+            let avgTimeTick = totalTimeTick/nPersonsTransported;
+            return [jsLift.tick2seconds(avgTimeTick),jsLift.tick2seconds(maxTimeTick)];
+        }
+        return [];
     },
 
     /*
@@ -677,6 +807,15 @@ let jsLift = {
         return jsLift.CANVAS_HEIGHT-liftHeight > jsLift.getFloorYCoordinate(floorNumber);
     },
 
+    getTotaNbWaitingPeople: function(){
+        // renvoie le nombre total de personnes attendant l'ascenseur
+        let total = 0;
+        for(let f=0;f<jsLift.floorsList.length;f++){
+            total += jsLift.floorsList[f].getWaitingQueue().length;
+        }
+        return total;
+    },
+
     /*
     * INTERFACE AVEC LE SCRIPT DE LA JOUEUSE
     */
@@ -700,9 +839,15 @@ let jsLift = {
 
     },
 
-    tryCallButtonIsPressed: function(floorNumber, direction){
-        if (typeof buttonIsPressed == 'function'){
-            buttonIsPressed(floorNumber,direction);     
+    tryCallFloorButtonIsPressed: function(floorNumber, direction){
+        if (typeof floorButtonIsPressed == 'function'){
+            floorButtonIsPressed(floorNumber,direction);     
+        }
+    },
+
+    tryCallLiftButtonIsPressed: function(liftNumber, floorTo){
+        if (typeof liftButtonIsPressed == 'function'){
+            liftButtonIsPressed(liftNumber,floorTo);     
         }
     },
 

@@ -146,6 +146,10 @@ class Lift {
                         }
                     }
                 }
+                else{
+                    console.log('IDLE');
+                    jsLift.tryCallLiftIsIdle(this.#id);
+                }
                 /*else{
                     jsLift.tryCallLiftIsSTOPPED(this.#id);
                     this.#state = jsLift.STOPPED;
@@ -188,12 +192,17 @@ class Lift {
                     let personIn = jsLift.getPersonFromWaitingQueue(currentFloor, this.#id);
                     if(personIn){
                         this.#passengersList.push(personIn);
+                        jsLift.tryCallLiftButtonIsPressed(this.#id,personIn.getFloorTo());
                         break;
                     }
                 }
                 this.updateButtonsList();
                 if(this.#destinationList.length>0){
                     this.#state = jsLift.CLOSING_DOORS;
+                }
+                else{
+                    //console.log('idleeee');
+                    jsLift.tryCallLiftIsIdle(this.#id);
                 }
                 break;
             case jsLift.CLOSING_DOORS:
@@ -262,18 +271,33 @@ class Floor {
         // crée personnes
         for(let floorTo=0;floorTo < jsLift.currentScenario.nFloors;floorTo++){
             if(floorTo != this.#id){
-                if (this.#waitingQueue.length < jsLift.WAITING_QUEUE_MAX_LENGTH && Math.random()*10 < jsLift.currentScenario.spawnProbMatrix[this.#id][floorTo] ){
-                    //console.log(`génération perso de ${this.#id} vers ${floorTo}`);
-                    this.#waitingQueue.push(new Person(this.#id,floorTo));
-                    if(floorTo>this.#id){
-                        jsLift.tryCallButtonIsPressed(this.#id,UP);
+                // vérifier si max atteint
+                let maxNbReached = false;
+                if(jsLift.currentScenario.maxTotalPeople>0){
+                    let totalPeople = jsLift.getTotaNbWaitingPeople();
+                    jsLift.liftsList.forEach(lift=>{
+                        totalPeople += lift.getPassengersCount();
+                    });
+                    if (totalPeople>=jsLift.currentScenario.maxTotalPeople){
+                        maxNbReached = true;
                     }
-                    else{
-                        jsLift.tryCallButtonIsPressed(this.#id,DOWN);
+                }
+                if(!maxNbReached){
+                        if (( jsLift.currentScenario.maxWaitingQueue<0 || this.#waitingQueue.length < jsLift.currentScenario.maxWaitingQueue) && Math.random()*10 < jsLift.currentScenario.spawnProbMatrix[this.#id][floorTo] ){
+                        //console.log(`génération perso de ${this.#id} vers ${floorTo} (${jsLift.currentScenario.spawnProbMatrix[this.#id][floorTo]})`);
+                        this.#waitingQueue.push(new Person(this.#id,floorTo));
+                        if(floorTo>this.#id){
+                            jsLift.tryCallFloorButtonIsPressed(this.#id,UP);
+                        }
+                        else{
+                            jsLift.tryCallFloorButtonIsPressed(this.#id,DOWN);
+                        }
                     }
+
                 }
             }
         }
+        
 
         // màj boutons
         this.#buttons = [false,false];
