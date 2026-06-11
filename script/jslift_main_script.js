@@ -29,7 +29,7 @@ let jsLift = {
     CHALLENGE_MAX_WAITING_TIME: 1,
 
     // paramètres sim
-    WAITING_QUEUE_MAX_LENGTH : 10, // taille maximale d'une file d'attente
+    //WAITING_QUEUE_MAX_LENGTH : 10, // taille maximale d'une file d'attente
     LIFT_MAX_CAPACITY : 5,
 
     // dimensions dessins
@@ -1009,6 +1009,11 @@ function updateLiftLights(liftNumber){
 function getNFloors(){
     // renvoie le nombre d'étages
     return jsLift.currentScenario.nFloors;
+}
+
+function getNLifts(){
+    // renvoie le nombre d'ascenseurs
+    return jsLift.currentScenario.nLifts;
 }
 
 function getFloorButtonState(floorNumber, direction){
