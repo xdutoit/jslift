@@ -76,6 +76,10 @@ class Lift {
         return this.#passengersList.length;
     }
 
+    getPassengersList(){
+        return this.#passengersList;
+    }
+
     updateButtonsList(){
         for(let f=0;f<jsLift.floorsList.length;f++){
             this.#buttonsList[f] = false;
@@ -171,7 +175,7 @@ class Lift {
                     for(let p=this.#passengersList.length-1;p>=0;p--){
                         if(this.#passengersList[p].getFloorTo() == currentFloor){
                             found = p;
-                            //break;
+                            break;
                         }
                     }
                     if(found>=0){
@@ -192,10 +196,8 @@ class Lift {
                     let personIn = jsLift.getPersonFromWaitingQueue(currentFloor, this.#id);
                     if(personIn){
                         this.#passengersList.push(personIn);
-                        if (!getLiftButtonState(this.#id,personIn.getFloorTo())){
-                            jsLift.tryCallLiftButtonIsPressed(this.#id,personIn.getFloorTo());
-                        }
-                        //break;
+                        jsLift.tryCallLiftButtonIsPressed(this.#id,personIn.getFloorTo());
+                        break;
                     }
                 }
                 this.updateButtonsList();
@@ -203,6 +205,7 @@ class Lift {
                     this.#state = jsLift.CLOSING_DOORS;
                 }
                 else{
+                    //console.log('idleeee');
                     jsLift.tryCallLiftIsIdle(this.#id);
                 }
                 break;
@@ -288,14 +291,10 @@ class Floor {
                         //console.log(`génération perso de ${this.#id} vers ${floorTo} (${jsLift.currentScenario.spawnProbMatrix[this.#id][floorTo]})`);
                         this.#waitingQueue.push(new Person(this.#id,floorTo));
                         if(floorTo>this.#id){
-                            if (!getFloorButtonState(this.#id,UP)){
-                                jsLift.tryCallFloorButtonIsPressed(this.#id,UP);
-                            }
+                            jsLift.tryCallFloorButtonIsPressed(this.#id,UP);
                         }
                         else{
-                            if (!getFloorButtonState(this.#id,DOWN)){
-                                jsLift.tryCallFloorButtonIsPressed(this.#id,DOWN);
-                            }
+                            jsLift.tryCallFloorButtonIsPressed(this.#id,DOWN);
                         }
                     }
 

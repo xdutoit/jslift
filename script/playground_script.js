@@ -24,11 +24,8 @@ function direction2str(dir){
 function gererLiftInit(){
     pgSetConsoleMsg(`gererLiftInit()`);
 }
-function liftButtonIsPressed(liftNumber, floorTo){
-    pgSetConsoleMsg(`liftButtonIsPressed(${liftNumber},${floorTo})`);
-}
-function floorButtonIsPressed(floorNumber, direction){
-    pgSetConsoleMsg(`floorButtonIsPressed(${floorNumber},${direction2str(direction)})`);
+function buttonIsPressed(floorNumber, direction){
+    pgSetConsoleMsg(`buttonIsPressed(${floorNumber},${direction2str(direction)})`);
 }
 function liftArrivesAtFloor(liftNumber, floorNumber){
     pgSetConsoleMsg(`liftArrivesAtFloor(${liftNumber},${floorNumber})`);
@@ -37,7 +34,7 @@ function liftLeavesFloor(liftNumber, floorNumber){
     pgSetConsoleMsg(`liftLeavesFloor(${liftNumber},${floorNumber})`);
 }
 function liftIsIdle(liftNumber){
-    //pgSetConsoleMsg(`liftIsIdle(${liftNumber})`);
+    pgSetConsoleMsg(`liftIsIdle(${liftNumber})`);
 }
 function pgSetConsoleMsg(txt){
     evtNum++;

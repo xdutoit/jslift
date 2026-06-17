@@ -1,3 +1,13 @@
+/*
+jsLift main script: librairie pour gérer des ascenseurs
+
+versions:
+1.4 17.06.2026: prise en compte des personnes pas encore déposées pour le calcul du temps d'attente
+
+
+*/
+
+
 // constantes globales
 DOWN = 0;
 UP = 1;
@@ -436,23 +446,18 @@ let jsLift = {
     },
 
     updateStats: function(){
-        let elapsedTime = Math.round(100*jsLift.tickNum*jsLift.DT/1000)/100;
+        let elapsedTime = jsLift.tick2seconds(jsLift.tickNum);
         let nPersonsTransported = jsLift.waitingTimesList.length;
+
+        let avgMaxTime = jsLift.getAvgMaxWaitingTime();
+
         let avgTimeSeconds = '-';
         let maxTimeSeconds = '-';
 
-        if(jsLift.waitingTimesList.length>0){
-            let maxTimeTick = 0;
-            let totalTimeTick = 0;
-            jsLift.waitingTimesList.forEach(t => {
-                totalTimeTick += t;
-                if(t>maxTimeTick){
-                    maxTimeTick = t;
-                }
-            });
-            let avgTimeTick = totalTimeTick/nPersonsTransported;
-            avgTimeSeconds = Math.round(100*avgTimeTick*jsLift.DT/1000)/100;
-            maxTimeSeconds = Math.round(100*maxTimeTick*jsLift.DT/1000)/100;
+        if (avgMaxTime.length){
+            avgTimeSeconds = avgMaxTime[0];
+            maxTimeSeconds = avgMaxTime[1];
+
         }
 
         document.querySelector('#span_stats_time_elapsed').innerHTML = elapsedTime;
@@ -496,11 +501,6 @@ let jsLift = {
                 challengeCompleted = true;
         }
 
-
-
-        // if max>autorisé: gameOver=true
-        // if gameOver && max<=autorisé: challengeCompleted=true
-
         if(gameOver || challengeCompleted){
             jsLift.simState = jsLift.STATE_PAUSE;
             clearInterval(jsLift.tickTimer);
@@ -521,29 +521,58 @@ let jsLift = {
 
     },
 
-    // TODO: function tick2seconds
     // TODO: function getElapsedTime
     // TODO: function getNbTransportedPersons
-    // TODO: function getMaxAvgWaitingTime
 
     tick2seconds: function(tick){
         return Math.round(100*tick*jsLift.DT/1000)/100;
     },
 
     getAvgMaxWaitingTime: function(){
+        
+        let maxTimeticks = 0;
+        let totalTimeTicks = 0;
+        let nbPersonsScanned = 0;
+
+        // chercher parmi personnes déposées
         if(jsLift.waitingTimesList.length>0){
-            let maxTimeTick = 0;
-            let totalTimeTick = 0;
-            
-            let nPersonsTransported = jsLift.waitingTimesList.length;
             jsLift.waitingTimesList.forEach(t => {
-                totalTimeTick += t;
-                if(t>maxTimeTick){
-                    maxTimeTick = t;
+                totalTimeTicks += t;
+                nbPersonsScanned++;
+                if(t>maxTimeticks){
+                    maxTimeticks = t;
                 }
             });
-            let avgTimeTick = totalTimeTick/nPersonsTransported;
-            return [jsLift.tick2seconds(avgTimeTick),jsLift.tick2seconds(maxTimeTick)];
+        }
+
+        // ajout v.1.4: chercher max waiting time parmi personnes pas encore déposées
+        // chercher parmi les personnes qui attendent aux étages
+        jsLift.floorsList.forEach(f => {
+            f.getWaitingQueue().forEach(p => {
+                let t = jsLift.tickNum - p.getSpawnTime();
+                totalTimeTicks += t;
+                nbPersonsScanned++;
+                if(t>maxTimeticks){
+                    maxTimeticks = t;
+                }
+            });
+        });
+
+        // chercher parmi les personnes dans les ascenseurs
+        jsLift.liftsList.forEach(l => {
+            l.getPassengersList().forEach(p => {
+                let t = jsLift.tickNum - p.getSpawnTime();
+                totalTimeTicks += t;
+                nbPersonsScanned++;
+                if(t>maxTimeticks){
+                    maxTimeticks = t;
+                }
+            });
+        });
+
+        if(nbPersonsScanned>0){
+            let avgTimeTicks = totalTimeTicks/nbPersonsScanned;
+            return [jsLift.tick2seconds(avgTimeTicks),jsLift.tick2seconds(maxTimeticks)];
         }
         return [];
     },
